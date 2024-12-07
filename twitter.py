@@ -138,8 +138,44 @@ def get_recent_tweets(user_id):
         })
 
         if response.status_code == 200:
-            return response.json().get("data", {}).get("user", {}).get("result", {}).get("timeline_v2", {}).get(
+            entries = response.json().get("data", {}).get("user", {}).get("result", {}).get("timeline_v2", {}).get(
                 "timeline", {}).get("instructions", [])
+            tweets = []
+            for entry in entries:
+                if entry["type"] == "TimelineAddEntries":
+                    for tweet_entry in entry.get("entries", []):
+                        tweet_content = tweet_entry.get("content", {}).get("itemContent", {}).get("tweet_results",
+                                                                                                  {}).get(
+                            "result", {})
+                        tweet_legacy = tweet_content.get("legacy", {})
+                        quoted_status = tweet_content.get("quoted_status_result", {})
+                        quoted_user = quoted_status.get("result", {}).get("core", {}).get("user_results", {}).get(
+                            "result",
+                            {}).get(
+                            "legacy", {}).get("name")
+                        tweet = {
+                            "id_str": tweet_legacy.get("id_str"),
+                            "text": tweet_legacy.get("full_text"),
+                            "author_name": tweet_content.get("core", {}).get("user_results", {}).get("result", {}).get(
+                                "legacy", {}).get("name"),
+                            "author_screen_name": tweet_content.get("core", {}).get("user_results", {}).get("result",
+                                                                                                            {}).get(
+                                "legacy", {}).get("screen_name"),
+                            "likes": tweet_legacy.get("favorite_count"),
+                            "retweets": tweet_legacy.get("retweet_count"),
+                            "created_at": tweet_legacy.get("created_at"),
+                            "time": time.time(),
+                            "replies": tweet_legacy.get("reply_count"),
+                            "lang": tweet_legacy.get("lang"),
+                            "media_urls": [
+                                media.get("media_url_https")
+                                for media in tweet_legacy.get("extended_entities", {}).get("media", [])
+                                if media.get("type") == "photo"
+                            ],
+                            "quote_tweet_text": f'{quoted_status.get("result", {}).get("legacy", {}).get("full_text", None)} - {quoted_user}'
+                        }
+                        tweets.append(tweet)
+            return tweets
         elif response.status_code == 429:
             reset_time = int(response.headers.get("x-rate-limit-reset", time.time() + 60))  # Default to 60 seconds
             sleep_duration = reset_time - time.time()
