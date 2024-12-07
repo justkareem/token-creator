@@ -1,0 +1,6 @@
+protobuf==5.29.1
+Requests==2.32.3
+solders==0.23.0
+tweet_capture==0.2.5
+typing_extensions==4.12.2
+
