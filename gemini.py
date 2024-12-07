@@ -4,8 +4,23 @@ from typing_extensions import TypedDict
 import uuid
 import json
 import requests
+import emoji
+
+
+def translate_emojis(text):
+    # Define the replacer function
+    def emoji_replacer(char, _):
+        emoji_name = emoji.demojize(char)
+        # Convert to meaningful text: ":crying_face:" -> "(crying face)"
+        return f"({emoji_name.strip(':').replace('_', ' ')})"
+
+    # Replace emojis with their descriptions
+    return emoji.replace_emoji(text, replace=emoji_replacer)
+
 
 # Configure Gemini API
+
+
 genai.configure(api_key=os.getenv('API_KEY'))
 
 
@@ -68,7 +83,7 @@ def analyze_tweet_with_gemini(tweet_details, media_urls):
 
     # Start chat session with Gemini
     chat_session = model.start_chat()
-    message_parts = uploaded_files + [f"""Tweet Analysis:
+    text = f"""Tweet Analysis:
     Text: {tweet_details['text']}
     Author: {tweet_details['author_name']} (@{tweet_details['author_screen_name']})
     Likes: {tweet_details['likes']}
@@ -86,7 +101,9 @@ def analyze_tweet_with_gemini(tweet_details, media_urls):
     - Suitability for generating a coin
     - Meme level from 1-10 (be very critical)
     - Suggested coin name (max 3 words)
-    All output should be based on crypto and memecoin trends and culture. Use crypto/memecoin lingo. 5/10 is my pass mark for creating a coin(rate accordinly)"""]
+    All output should be based on crypto and memecoin trends and culture. Use crypto/memecoin lingo. 5/10 is my pass mark for creating a coin(rate accordinly)"""
+    text = translate_emojis(text)
+    message_parts = uploaded_files + [text]
 
     try:
         response = chat_session.send_message({"role": "user", "parts": message_parts})
