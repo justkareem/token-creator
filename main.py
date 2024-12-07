@@ -8,6 +8,7 @@ MONITORED_USERNAMES = ["elonmusk", "realDonaldTrump"]  # Example Twitter user ID
 
 # Main function to process tweets
 def process_tweets():
+    print("Checking for new tweets...")
     seen_tweets = set()
     for username in MONITORED_USERNAMES:
         user_id = get_user_id(username)
