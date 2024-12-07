@@ -3,7 +3,7 @@ from token_creator import send_local_create_tx
 from twitter import *
 from gemini import analyze_tweet_with_gemini
 
-MONITORED_USERNAMES = ["elonmusk", "realDonaldTrump"]  # Example Twitter user IDs
+MONITORED_USERNAMES = ["cat_gta34720"]  # Example Twitter user IDs
 
 
 # Main function to process tweets
@@ -45,9 +45,12 @@ def process_tweets():
                         "ticker": tweet_analysis.get('ticker', 'DEF'),
                         "description": tweet_analysis.get('coin_description', 'Default Description'),
                         "image": media_urls[0] if media_urls else None,
+                        "meme_level": tweet_analysis.get('meme_level', 0)
                     }
                     # Launch coin and optionally purchase
                     send_local_create_tx(coin_details, tweet)
+                else:
+                    print("The tweet isn't memecoin worth lol")
             sleep(20)
 
 

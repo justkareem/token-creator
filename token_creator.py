@@ -11,7 +11,7 @@ from solders.rpc.config import RpcSendTransactionConfig
 import asyncio
 from tweetcapture import TweetCapture
 
-PRIVATE_KEY = os.getenv('PRIVATE_KEY')
+PRIVATE_KEY = "*******"
 
 
 # Function to capture a tweet screenshot asynchronously
@@ -86,7 +86,6 @@ def send_local_create_tx(coin_details, tweet_details):
             return
         finally:
             # Delete the image file after uploading
-            input("pause")
             if os.path.exists(image_path):
                 os.remove(image_path)
 
@@ -113,7 +112,7 @@ def send_local_create_tx(coin_details, tweet_details):
                     'tokenMetadata': token_metadata,
                     'mint': str(mint_keypair.pubkey()),
                     'denominatedInSol': 'true',
-                    'amount': 0,  # Dev buy of 1 SOL
+                    'amount': coin_details["meme_level"],  # Dev buy of 1 SOL
                     'slippage': 0,
                     'priorityFee': 0.0000,
                     'pool': 'pump'
