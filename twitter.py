@@ -3,7 +3,7 @@ import requests
 import json
 
 
-# Function: Fetch recent tweets
+# Function: Fetch user ID
 def get_user_id(username):
     url = f"https://x.com/i/api/graphql/QGIw94L0abhuohrr76cSbw/UserByScreenName"
     variables = {
@@ -25,7 +25,6 @@ def get_user_id(username):
         "responsive_web_graphql_timeline_navigation_enabled": True
     }
     field_toggles = {"withAuxiliaryUserLabels": False}
-    # Construct headers
     headers = {
         "accept": "*/*",
         "accept-language": "en-US,en;q=0.9",
@@ -48,19 +47,30 @@ def get_user_id(username):
         "x-twitter-auth-type": "OAuth2Session",
         "x-twitter-client-language": "en"
     }
-    response = requests.get(url, headers=headers, params={
-        "variables": json.dumps(variables),
-        "features": json.dumps(features),
-        "fieldToggles": json.dumps(field_toggles)
-    })
-    if response.status_code == 200:
-        user_id = response.json().get("data", {}).get("user", {}).get("result", {}).get("rest_id")
-        if user_id:
-            return user_id
-    print(f"Error fetching user ID for {username}: {response.status_code}, {response.text}")
-    return None
+
+    while True:
+        response = requests.get(url, headers=headers, params={
+            "variables": json.dumps(variables),
+            "features": json.dumps(features),
+            "fieldToggles": json.dumps(field_toggles)
+        })
+
+        if response.status_code == 200:
+            user_id = response.json().get("data", {}).get("user", {}).get("result", {}).get("rest_id")
+            if user_id:
+                return user_id
+        elif response.status_code == 429:
+            reset_time = int(response.headers.get("x-rate-limit-reset", time.time() + 60))  # Default to 60 seconds
+            sleep_duration = reset_time - time.time()
+            if sleep_duration > 0:
+                print(f"Rate limited. Sleeping for {sleep_duration:.2f} seconds.")
+                time.sleep(sleep_duration)
+        else:
+            print(f"Error fetching user ID for {username}: {response.status_code}, {response.text}")
+            return None
 
 
+# Function: Fetch recent tweets
 def get_recent_tweets(user_id):
     url = "https://x.com/i/api/graphql/tzh4soFIeC6EUW0aLxrYpQ/UserTweets"
     variables = {
@@ -98,8 +108,6 @@ def get_recent_tweets(user_id):
         "longform_notetweets_inline_media_enabled": True,
         "responsive_web_enhance_cards_enabled": False
     }
-    field_toggles = {"withArticlePlainText": False}
-    # Construct headers
     headers = {
         "accept": "*/*",
         "accept-language": "en-US,en;q=0.9",
@@ -122,48 +130,22 @@ def get_recent_tweets(user_id):
         "x-twitter-auth-type": "OAuth2Session",
         "x-twitter-client-language": "en"
     }
-    response = requests.get(url, headers=headers, params={
-        "variables": json.dumps(variables),
-        "features": json.dumps(features),
-        "fieldToggles": json.dumps(field_toggles)
-    })
-    if response.status_code == 200:
-        entries = response.json().get("data", {}).get("user", {}).get("result", {}).get("timeline_v2", {}).get(
-            "timeline", {}).get("instructions", [])
-        tweets = []
-        for entry in entries:
-            if entry["type"] == "TimelineAddEntries":
-                for tweet_entry in entry.get("entries", []):
-                    tweet_content = tweet_entry.get("content", {}).get("itemContent", {}).get("tweet_results", {}).get(
-                        "result", {})
-                    tweet_legacy = tweet_content.get("legacy", {})
-                    quoted_status = tweet_content.get("quoted_status_result", {})
-                    quoted_user = quoted_status.get("result", {}).get("core", {}).get("user_results", {}).get("result",
-                                                                                                              {}).get(
-                        "legacy", {}).get("name")
-                    tweet = {
-                        "id_str": tweet_legacy.get("id_str"),
-                        "text": tweet_legacy.get("full_text"),
-                        "author_name": tweet_content.get("core", {}).get("user_results", {}).get("result", {}).get(
-                            "legacy", {}).get("name"),
-                        "author_screen_name": tweet_content.get("core", {}).get("user_results", {}).get("result",
-                                                                                                        {}).get(
-                            "legacy", {}).get("screen_name"),
-                        "likes": tweet_legacy.get("favorite_count"),
-                        "retweets": tweet_legacy.get("retweet_count"),
-                        "created_at": tweet_legacy.get("created_at"),
-                        "time": time.time(),
-                        "replies": tweet_legacy.get("reply_count"),
-                        "lang": tweet_legacy.get("lang"),
-                        "media_urls": [
-                            media.get("media_url_https")
-                            for media in tweet_legacy.get("extended_entities", {}).get("media", [])
-                            if media.get("type") == "photo"
-                        ],
-                        "quote_tweet_text": f'{quoted_status.get("result", {}).get("legacy", {}).get("full_text", None)} - {quoted_user}'
-                    }
-                    tweets.append(tweet)
-        return tweets
-    else:
-        print(f"Error fetching tweets for {user_id}: {response.status_code}, {response.text}")
-        return []
+
+    while True:
+        response = requests.get(url, headers=headers, params={
+            "variables": json.dumps(variables),
+            "features": json.dumps(features)
+        })
+
+        if response.status_code == 200:
+            return response.json().get("data", {}).get("user", {}).get("result", {}).get("timeline_v2", {}).get(
+                "timeline", {}).get("instructions", [])
+        elif response.status_code == 429:
+            reset_time = int(response.headers.get("x-rate-limit-reset", time.time() + 60))  # Default to 60 seconds
+            sleep_duration = reset_time - time.time()
+            if sleep_duration > 0:
+                print(f"Rate limited. Sleeping for {sleep_duration:.2f} seconds.")
+                time.sleep(sleep_duration)
+        else:
+            print(f"Error fetching tweets for {user_id}: {response.status_code}, {response.text}")
+            return None
