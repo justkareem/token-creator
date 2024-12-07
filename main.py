@@ -1,3 +1,4 @@
+from time import sleep
 from token_creator import send_local_create_tx
 from twitter import *
 from gemini import analyze_tweet_with_gemini
@@ -46,6 +47,7 @@ def process_tweets():
                     }
                     # Launch coin and optionally purchase
                     send_local_create_tx(coin_details, tweet)
+            sleep(20)
 
 
 # Run the process once
