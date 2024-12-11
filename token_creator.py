@@ -11,7 +11,9 @@ from solders.rpc.config import RpcSendTransactionConfig
 import asyncio
 from tweetcapture import TweetCapture
 
-PRIVATE_KEY = "*******"
+PRIVATE_KEY = "*******"  # private key to create token from
+CUSTOM_WALLET_PRIVATE_KEY = "*******"  # your wallet address for buying
+CUSTOM_WALLET_PUBLIC_KEY = "*******"  # your private key for buying
 
 
 # Function to capture a tweet screenshot asynchronously
@@ -26,6 +28,38 @@ async def capture_tweet(tweet_url):
     else:
         print("Failed to capture the tweet.")
         return None
+
+
+# buy coin from a custom wallet
+def buy_from_custom_wallet(token_address):
+    try:
+        response = requests.post(url="https://pumpportal.fun/api/trade-local", data={
+            "publicKey": CUSTOM_WALLET_PUBLIC_KEY,
+            "action": "buy",  # "buy" or "sell"
+            "mint": token_address,  # contract address of the token you want to trade
+            "amount": 1,  # amount of SOL or tokens to trade
+            "denominatedInSol": "true",  # "true" if amount is amount of SOL, "false" if amount is number of tokens
+            "slippage": 10,  # percent slippage allowed
+            "priorityFee": 0.005,  # amount to use as priority fee
+            "pool": "pump"  # exchange to trade on. "pump" or "raydium"
+        })
+
+        keypair = Keypair.from_base58_string(CUSTOM_WALLET_PRIVATE_KEY)
+        tx = VersionedTransaction(VersionedTransaction.from_bytes(response.content).message, [keypair])
+
+        commitment = CommitmentLevel.Confirmed
+        config = RpcSendTransactionConfig(preflight_commitment=commitment)
+        txPayload = SendVersionedTransaction(tx, config)
+
+        response = requests.post(
+            url="https://api.mainnet-beta.solana.com/",
+            headers={"Content-Type": "application/json"},
+            data=txPayload.to_json()
+        )
+        txSignature = response.json()['result']
+        print(f'Transaction: https://solscan.io/tx/{txSignature}')
+    except Exception as e:
+        print(f"Error: {e}")
 
 
 # Function: Launch coin on Pump-Fun and buy it
@@ -152,6 +186,7 @@ def send_local_create_tx(coin_details, tweet_details):
         if 'result' in rpc_response_json:
             tx_signature = rpc_response_json['result']
             print(f'Transaction: https://solscan.io/tx/{tx_signature}')
+            buy_from_custom_wallet(str(mint_keypair.pubkey()))
         else:
             print(f"Error: Unexpected response from RPC: {rpc_response_json}")
 
