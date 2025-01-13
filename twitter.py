@@ -30,7 +30,7 @@ def get_user_id(username):
         "accept-language": "en-US,en;q=0.9",
         "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs=1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
         "content-type": "application/json",
-        "cookie": "guest_id=v1:171431189368611161; night_mode=2; guest_id_marketing=v1:171431189368611161; guest_id_ads=v1:171431189368611161; kdt=YuZqwnOnZL9h05pSxA3GFsD0MFgRaAuDmxCxXs84; auth_token=18cdcf673bc00e1eef611aac96f580a943d2e924; ct0=34b186d6b5dcfe438607532c7fed9dcb5be13b2b7e660be05b33b8926c40fa59fa258f6626e05223229344b216bce0c88cf7356400a01c813d35d1521139319ade76f29b4a1727ac5d2f93333ee08057; twid=u=1601514279458557953; personalization_id=\"v1_572d9eJK/Otpo3l6nrWNWA==\"; lang=en; external_referer=padhuUp37zjgzgv1mFWxJ12Ozwit7owX|0|8e8t2xd8A2w=",
+        "cookie": "guest_id=v1:171431189368611161; night_mode=2; guest_id_marketing=v1:171431189368611161; guest_id_ads=v1:171431189368611161; kdt=YuZqwnOnZL9h05pSxA3GFsD0MFgRaAuDmxCxXs84; auth_token=18cdcf673bc00e1eef611aac96f580a943d2; ct0=34b186d6b5dcfe438607532c7fed9dcb5be13b2b7e660be05b33b8926c40fa59fa258f6626e05223229344b216bce0c88cf7356400a01c813d35d1521139319ade76f29b4a1727ac5d2f93333ee08057; twid=u=1601514279458557953; personalization_id=\"v1_572d9eJK/Otpo3l6nrWNWA==\"; lang=en; external_referer=padhuUp37zjgzgv1mFWxJ12Ozwit7owX|0|8e8t2xd8A2w=",
         "origin": "https://x.com",
         "priority": "u=1, i",
         "referer": "https://x.com/",
